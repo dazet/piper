@@ -14,11 +14,17 @@ final class InterfacesTagger implements ObjectTagger
             return $default;
         }
 
+        $interfaces = class_implements($object) ?: [];
+
+        if (empty($interfaces)) {
+            return $default;
+        }
+
         $tags = array_map(
             function (string $interface): ObjectTag {
                 return new ObjectTag($interface);
             },
-            class_implements($object) ?: []
+            $interfaces
         );
 
         return $default->withTag(...array_values($tags));

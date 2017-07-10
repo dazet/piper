@@ -31,27 +31,22 @@ final class ObjectTags
      */
     public function items(): array
     {
-        return $this->items;
-    }
-
-    public function matches(ObjectTags $other): bool
-    {
-        return !empty(array_intersect_key($this->items, $other->items));
+        return array_values($this->items);
     }
 
     public function equals(self $other): bool
     {
-        return empty(array_diff_key($this->items, $other->items));
+        return count($this->items) === count($other->items) && array_diff_key($this->items, $other->items) === [];
     }
 
     public function join(self $other): self
     {
-        return new self(...$this->items, ...$other->items);
+        return new self(...$this->items(), ...$other->items());
     }
 
     public function withTag(ObjectTag ...$tags): self
     {
-        return new self(...array_values($this->items), ...$tags);
+        return new self(...$this->items(), ...$tags);
     }
 
     public function isEmpty(): bool

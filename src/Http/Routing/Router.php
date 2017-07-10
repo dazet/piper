@@ -3,14 +3,16 @@
 namespace Piper\Http\Routing;
 
 use Psr\Http\Message\ServerRequestInterface;
+use Webmozart\Assert\Assert;
 
 final class Router
 {
     /** @var Route[] */
     private $routes;
 
-    public function __construct(Route ...$routes)
+    public function __construct(array $routes)
     {
+        Assert::allIsInstanceOf($routes, Route::class);
         $this->routes = $routes;
     }
     

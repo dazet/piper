@@ -6,7 +6,7 @@ Piper is a idea for an application architecture where everything is a pipe.
 
 Pipe is kind of function that takes one input object and returns one output object or null (clogged pipe).
 
-#### Transforming pipe
+#### Redirecting pipe
 
 Kind of pipe that transforms input into something else.
 
@@ -20,9 +20,9 @@ interface HttpAction
 }
 ```
 
-#### Filtering pipe
+#### Transforming pipe
 
-Kind of pipe that filters input and returns the same object or modified object of the same type.
+Kind of pipe returns the same object or modified object of the same type.
 
 Example:
 ```php
@@ -101,4 +101,3 @@ Object can have assigned following tags:
 * `Object is instance of Class`
 * `Object is instance of Interface`
 * `Object is instance of Class with given sets off attributes`
-

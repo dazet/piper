@@ -1,0 +1,6 @@
+suites:
+    piper:
+         namespace: Piper
+         psr4_prefix: Piper
+         spec_path: .
+         src_path: src

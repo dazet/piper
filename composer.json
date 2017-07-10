@@ -2,17 +2,25 @@
     "name": "dazet/piper",
     "type": "project",
     "autoload": {
-        "psr-4": {"Piper\\": "src/"}
+        "psr-0": {
+            "": "src/"
+        },
+        "psr-4": {
+            "Piper\\": "src/",
+            "spec\\Piper\\": "spec/"
+        }
     },
     "require": {
         "psr/http-message": "^1.0",
-        "zendframework/zend-diactoros": "^1.4",
         "psr/container": "^1.0@dev",
-        "league/container": "^3.0",
-        "webmozart/assert": "^1.2"
+        "webmozart/assert": "^1.2",
+        "zendframework/zend-diactoros": "^1.4"
     },
     "require-dev": {
         "phpspec/phpspec": "^3.2"
+    },
+    "config": {
+        "bin-dir": "bin"
     },
     "license": "MIT",
     "minimum-stability": "dev"

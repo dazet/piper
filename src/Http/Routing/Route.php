@@ -58,7 +58,7 @@ final class Route
     private function buildPattern(): string
     {
         // quote all by default
-        $pattern = preg_quote($this->path(), '#');
+        $pattern = preg_quote($this->path(), '~');
 
         // replace quoted {paramName} with named sub-pattern
         $pattern = preg_replace_callback(
@@ -71,7 +71,7 @@ final class Route
             $pattern
         );
 
-        return "#^{$pattern}\$#i";
+        return "~^{$pattern}$~i";
     }
 
     private function matchesPath(string $path): bool

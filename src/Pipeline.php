@@ -7,6 +7,12 @@ use Piper\Pipe\ObjectTags;
 
 final class Pipeline
 {
+    const START = -100;
+    const BEFORE = -10;
+    const NORMAL = 0;
+    const AFTER = 10;
+    const END = 100;
+
     /** @var Pipe[][] */
     private $pipes = [];
 
@@ -26,9 +32,9 @@ final class Pipeline
 
     /**
      * @param object $input Pipeline input object.
-     * @param callable|null $finished Callback for last unhandled pipe output.
+     * @param callable|null $restHandler Callback for last unhandled pipe output.
      */
-    public function pump($input, callable $finished = null): void
+    public function pump($input, callable $restHandler = null): void
     {
         $inputTags = $this->tagger->tagsFor($input, new ObjectTags());
         $current = $input;
@@ -39,26 +45,25 @@ final class Pipeline
             $output = $trigger($current);
             $outputTags = $this->tagger->tagsFor($output, new ObjectTags());
 
-            // 3 possible scenarios:
-            // - pipe is clogged (dead end), try next pipe with same input...
+            // Pipe is clogged (dead end), try next pipe with current input.
             if ($outputTags->isEmpty()) {
                 continue;
             }
 
-            // - pipe has transformed input, start with new set of pipes...
+            // Pipe has transformed input, start with new set of pipes.
             if (!$outputTags->equals($currentTags)) {
-                $this->pump($output, $finished);
+                $this->pump($output, $restHandler);
 
                 return;
             }
 
-            // - pipe has just filtered input, continue with next pipe.
+            // Pipe has returned original or slightly modified input, continue with next pipe.
             $current = $output;
             $currentTags = $outputTags;
         }
 
-        if ($finished !== null) {
-            $finished($current);
+        if ($restHandler !== null) {
+            $restHandler($current);
         }
     }
 
@@ -67,11 +72,15 @@ final class Pipeline
      */
     private function pipesFor(ObjectTags $tags): array
     {
-        $pipes = array_filter($this->pipes, function(Pipe $pipe) use ($tags): bool {
-            return $pipe->input()->matches($tags);
-        });
+        $pipes = [];
 
-        uasort($pipes, function(Pipe $a, Pipe $b) {
+        foreach ($tags->items() as $tag) {
+            $pipes[] = $this->pipes[$tag->toString()] ?? [];
+        }
+
+        $pipes = array_merge(...$pipes);
+
+        uasort($pipes, function(Pipe $a, Pipe $b): int {
             return $a->order() <=> $b->order();
         });
 

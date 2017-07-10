@@ -21,7 +21,7 @@ final class ObjectTag implements \JsonSerializable
         $this->attributes = $attributes;
     }
 
-    public function fromJson(string $json): self
+    public static function fromJson(string $json): self
     {
         $data = json_decode($json, true);
         Assert::isArray($data);

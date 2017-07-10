@@ -3,6 +3,7 @@
 namespace Piper\Pipe;
 
 use Piper\Pipe;
+use Piper\Pipeline;
 
 final class CallablePipe implements Pipe
 {
@@ -15,7 +16,7 @@ final class CallablePipe implements Pipe
     /** @var int */
     private $priority;
 
-    public function __construct(callable $trigger, ObjectTags $input, int $priority = self::NORMAL)
+    public function __construct(callable $trigger, ObjectTags $input, int $priority = Pipeline::NORMAL)
     {
         $this->trigger = $trigger;
         $this->input = $input;

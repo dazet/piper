@@ -6,12 +6,6 @@ use Piper\Pipe\ObjectTags;
 
 interface Pipe
 {
-    public const START = -100;
-    public const BEFORE = -10;
-    public const NORMAL = 0;
-    public const AFTER = 10;
-    public const END = 100;
-
     /**
      * Pipe trigger callback accepting 1 argument declared by `input` method.
      * @return callable
