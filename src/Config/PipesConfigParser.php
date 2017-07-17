@@ -27,6 +27,9 @@ final class PipesConfigParser implements ConfigParser
         return self::KEY;
     }
 
+    /**
+     * @param array[] $configBlock
+     */
     public function parse(array $configBlock): Services
     {
         $definitions = [];

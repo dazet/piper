@@ -2,62 +2,65 @@
 
 namespace Piper;
 
+use Zend\Diactoros\Response\EmitterInterface;
+use Zend\Diactoros\Response\SapiEmitter;
+use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Message\ResponseInterface;
+
 return [
     'services' => [
-        'Zend\Diactoros\Response\EmitterInterface' => 'Zend\Diactoros\Response\SapiEmitter',
-        'Piper\Http\StartRequestHandler' => [],
-        'Piper\Http\Response\ExampleAction' => [],
-        'Piper\Http\Response\FallbackResponder' => [],
-        'Piper\Http\Response\ResponseEmitter' => [
-            'arguments' => ['Zend\Diactoros\Response\EmitterInterface'],
+        EmitterInterface::class => SapiEmitter::class,
+        Http\StartRequestHandler::class => [],
+        Http\Response\ExampleAction::class => [],
+        Http\Response\FallbackResponder::class => [],
+        Http\Response\ResponseEmitter::class => [
+            'arguments' => [EmitterInterface::class],
         ],
-        'Zend\Diactoros\Response\SapiEmitter' => [],
-        'Piper\Http\Routing\Router' => [
-            'arguments' => ['route'],
-        ],
+        SapiEmitter::class => [],
+        Http\Routing\Router::class => ['arguments' => ['route']],
     ],
     'routes' => [
         'index' => ['path' => '/', 'pipelines' => ['http']],
         'hello' => ['path' => '/hello', 'pipelines' => ['http']],
     ],
     'pipes' => [
-        'StartRequestHandler' => [
-            'input' => ['class' => 'Piper\Http\StartRequest'],
-            'trigger.service' => ['Piper\Http\StartRequestHandler'],
+        [
+            'input' => ['class' => Http\StartRequest::class],
+            'trigger.service' => [Http\StartRequestHandler::class],
             'pipelines' => ['http'],
         ],
-        'Router' => [
-            'input' => ['class' => 'Psr\Http\Message\ServerRequestInterface'],
-            'trigger.service' => ['Piper\Http\Routing\Router', 'routeRequest'],
+        [
+            'input' => ['class' => ServerRequestInterface::class],
+            'trigger.service' => [Http\Routing\Router::class, 'routeRequest'],
             'pipelines' => ['http'],
         ],
-        'ExampleIndexAction' => [
+        [
             'input' => [
-                'class' => 'Psr\Http\Message\ServerRequestInterface',
+                'class' => ServerRequestInterface::class,
                 'attributes' => ['route' => 'index'],
             ],
-            'trigger.service' => ['Piper\Http\Response\ExampleAction', 'index'],
+            'trigger.service' => [Http\Response\ExampleAction::class, 'index'],
             'order' => Pipeline::NORMAL,
             'pipelines' => ['http'],
         ],
-        'ExampleHelloAction' => [
+        [
             'input' => [
-                'class' => 'Psr\Http\Message\ServerRequestInterface',
+                'class' => ServerRequestInterface::class,
                 'attributes' => ['route' => 'hello'],
             ],
-            'trigger.service' => ['Piper\Http\Response\ExampleAction', 'hello'],
+            'trigger.service' => [Http\Response\ExampleAction::class, 'hello'],
             'order' => Pipeline::NORMAL,
             'pipelines' => ['http'],
         ],
-        'FallbackResponder' => [
-            'input' => ['class' => 'Psr\Http\Message\ServerRequestInterface'],
-            'trigger.service' => ['Piper\Http\Response\FallbackResponder', 'notFound'],
+        [
+            'input' => ['class' => ServerRequestInterface::class],
+            'trigger.service' => [Http\Response\FallbackResponder::class, 'notFound'],
             'order' => Pipeline::END,
             'pipelines' => ['http'],
         ],
-        'ResponseEmitter' => [
-            'input' => ['class' => 'Psr\Http\Message\ResponseInterface'],
-            'trigger.service' => ['Piper\Http\Response\ResponseEmitter', 'emit'],
+        [
+            'input' => ['class' => ResponseInterface::class],
+            'trigger.service' => [Http\Response\ResponseEmitter::class, 'emit'],
             'order' => Pipeline::END,
             'pipelines' => ['http'],
         ],

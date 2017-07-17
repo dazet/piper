@@ -66,7 +66,7 @@ class Container implements ContainerInterface
     }
 
     /**
-     * @inheritdoc
+     * @param string $id
      */
     public function has($id): bool
     {

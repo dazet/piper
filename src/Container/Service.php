@@ -24,11 +24,6 @@ final class Service
         $this->id = $id;
     }
 
-    /**
-     * @param string $id
-     * @param callable $factory
-     * @return Service
-     */
     public static function fromFactory(string $id, callable $factory): self
     {
         $self = new self($id);
@@ -38,9 +33,7 @@ final class Service
     }
 
     /**
-     * @param string $id
      * @param mixed $instance
-     * @return Service
      */
     public static function fromInstance(string $id, $instance): self
     {

@@ -1,16 +1,50 @@
 # Piper
 
-Piper is a idea for an application architecture where everything is a pipe.
+Piper is a idea for an application framework composed from loosely coupled services or functions called here Pipes.
 
-## What is a Pipe?
+## Pipe and Pipeline in theory
 
-Pipe is kind of function that takes one input object and returns one output object or null (clogged pipe).
+Pipe is a function that take one input object and returns one output object, optionally output can be null. 
+This limitation makes it possible to connect many Pipes together creating Pipeline.
 
-#### Redirecting pipe
+Pipeline is initialized as collection of pipes and its flow depends on input and how pipes connects to each other.
+Pipeline gets the input, finds matching pipe and passes input through. 
+Than it takes the output and continues the same process until there is no pipe matching last output object.
+This last not processed object can be called pipeline rest or pipeline result. 
 
-Kind of pipe that transforms input into something else.
+Simple pipeline example:
+```
+// Pipeline composed from given pipes:
+p1(A): B (p1 takes A as input and outputs B)
+p2(B): C
+p3(C): D
+p4(X): B
 
-Example:
+// Pipeline for input A
+A -> p1(A) -> B -> p2(B) -> C -> p3(C) -> D
+
+// Pipeline for input X
+X -> p4(X) -> B -> p2(B) -> C -> p3(C) -> D
+```
+
+`D` is the rest from pipeline and can be optionally passed to rest handler callback.
+
+Pipeline can contain many pipes matching same input, each with defined order.
+Pipes matching same input are called one after another until input is transformed to different type.
+
+The pipeline follows the logic:
+1. Get the pipes that match provided input and put them in order.
+2. Let the input into first pipe and then:
+   * if pipe output is different than input (transforming pipe), start again with output as input,
+   * if pipe output is same type as input (flow pipe), continue with next pipe using output,
+   * if pipe is clogged, continue with next pipe using same input.
+3. When there are no pipes matching last output, pass it to provided rest handler.
+
+#### Transforming pipe
+
+Kind of pipe that transforms input into object of different type.
+
+The most common example is http action which takes request on input and outputs response:
 ```php
 <?php
 
@@ -20,11 +54,14 @@ interface HttpAction
 }
 ```
 
-#### Transforming pipe
+Transforming pipe is the one that pushes pipeline forward. 
+The simplest pipeline can be composed from pipes where each next pipe input matches previous pipe output.
 
-Kind of pipe returns the same object or modified object of the same type.
+#### Flow pipe
 
-Example:
+Kind of pipe where input and output has the same type.
+
+For example request attribute converter could look line this:
 ```php
 <?php
 
@@ -77,27 +114,19 @@ final class AuthorizedAction
 }
 ```
 
-`ActionFilter` obviously must be called before `AuthorizedAction`, but we let`s assume that bot actions belongs to the same pipeline...
+`ActionFilter` must be called before `AuthorizedAction`, so it is defined with earlier order.
 
-## Pipeline
+Returning null is maybe not the best pattern, perhaps better would be something like `Either<ServerRequestInterface, ResponseInterface>`,
+but unfortunately PHP does not support generics yet.
 
-Pipeline is a set of pipes combined together that can handle input of given type and returns expected output.
+### Object tags
 
-The pipeline follows the path:
-1. Get pipes that matches provided input.
-2. Let the input into the first pipe and then:
-   * if pipe output is different object than input (transforming pipe), get the pipes that matches output and continue,
-   * if pipe output is same type as input (filtering pipe), continue with next pipe using output,
-   * if pipe is clogged, continue with next pipe using same input.
-3. When there are no pipes matching last output, pass it to provided output handler.
+Pipe configuration must contain definition of what kind of object can be handled. 
+It should be defined precisely to avoid unexpected pipeline behaviour.
 
-The order of pipe flow is defined by `Pipe` `order` attribute.
+Pipe can declare that it accepts only instances of given class or interface, additionally it can declare that it accepts only instances with given set of public attributes.
+  
+For example `new ObjectTag(Example::class, ['group' => 'simple'])` tells that pipe accepts only instances of `Example` class that meets the condition `$example->group() === 'simple'`.
 
-## Object tags
-
-Pipe input and output matching depends on the tags that can be assigned to objects.
-
-Object can have assigned following tags:
-* `Object is instance of Class`
-* `Object is instance of Interface`
-* `Object is instance of Class with given sets off attributes`
+Extracting tags from object is done by `ObjectTagger`. 
+Default implementation extracts only class and interfaces, attributes tags requires specific implementation.

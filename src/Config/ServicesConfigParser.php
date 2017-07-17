@@ -29,7 +29,6 @@ final class ServicesConfigParser implements ConfigParser
 
     /**
      * @param mixed[] $configBlock [serviceId => definition]
-     * @return Services
      * @throws \RuntimeException
      */
     public function parse(array $configBlock): Services
@@ -77,8 +76,8 @@ final class ServicesConfigParser implements ConfigParser
         Assert::allString($tags);
 
         return Service::fromFactory($serviceId, function() use ($class, $arguments) {
-            return new $class(...array_map([$this->container, 'get'], $arguments));
-        })
+                return new $class(...array_map([$this->container, 'get'], $arguments));
+            })
             ->withSharing($shared)
             ->withTags(...$tags);
     }

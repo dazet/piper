@@ -19,8 +19,5 @@ interface ConfigParser
 {
     public function key(): string;
 
-    /**
-     * @return Services
-     */
     public function parse(array $configBlock): Services;
 }

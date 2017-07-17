@@ -16,9 +16,6 @@ final class RoutesConfigParser implements ConfigParser
         return self::KEY;
     }
 
-    /**
-     * @return Route[]
-     */
     public function parse(array $configBlock): Services
     {
         return new Services(...array_map([$this, 'parseRoute'], $configBlock, array_keys($configBlock)));
