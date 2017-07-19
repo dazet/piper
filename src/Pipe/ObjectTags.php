@@ -26,6 +26,16 @@ final class ObjectTags
         return new self(...$tags);
     }
 
+    public static function fromClass(string $class, array $attributes = []): self
+    {
+        return new self(new ObjectTag($class, $attributes));
+    }
+
+    public static function empty(): self
+    {
+        return new self();
+    }
+
     /**
      * @return ObjectTag[]
      */

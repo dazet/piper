@@ -7,11 +7,11 @@ use Piper\Pipe\ObjectTags;
 
 final class Pipeline
 {
-    const START = -100;
-    const BEFORE = -10;
-    const NORMAL = 0;
-    const AFTER = 10;
-    const END = 100;
+    public const START = -100;
+    public const BEFORE = -10;
+    public const NORMAL = 0;
+    public const AFTER = 10;
+    public const END = 100;
 
     /** @var Pipe[][] */
     private $pipes = [];
@@ -36,14 +36,14 @@ final class Pipeline
      */
     public function pump($input, callable $restHandler = null): void
     {
-        $inputTags = $this->tagger->tagsFor($input, new ObjectTags());
+        $inputTags = $this->tagsFor($input);
         $current = $input;
         $currentTags = $inputTags;
 
         foreach ($this->pipesFor($inputTags) as $pipe) {
             $trigger = $pipe->trigger();
             $output = $trigger($current);
-            $outputTags = $this->tagger->tagsFor($output, new ObjectTags());
+            $outputTags = $this->tagsFor($output);
 
             // Pipe is clogged (dead end), try next pipe with current input.
             if ($outputTags->isEmpty()) {
@@ -85,5 +85,13 @@ final class Pipeline
         });
 
         return $pipes;
+    }
+
+    /**
+     * @param object|null $input
+     */
+    private function tagsFor($input): ObjectTags
+    {
+        return $this->tagger->tagsFor($input, ObjectTags::empty());
     }
 }

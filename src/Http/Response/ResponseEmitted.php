@@ -7,7 +7,7 @@ final class ResponseEmitted
     /** @var float */
     private $time;
 
-    public function __construct(float $time = null)
+    public function __construct(float $time)
     {
         $this->time = $time;
     }

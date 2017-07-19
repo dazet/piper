@@ -2,6 +2,8 @@
 
 namespace Piper\Container;
 
+use Webmozart\Assert\Assert;
+
 final class Service
 {
     /** @var string */
@@ -19,7 +21,7 @@ final class Service
     /** @var string[] */
     private $tags = [];
 
-    public function __construct(string $id)
+    private function __construct(string $id)
     {
         $this->id = $id;
     }
@@ -40,7 +42,19 @@ final class Service
         $self = new self($id);
         $self->instance = $instance;
         $self->factory = function() use ($self) {
-            return $self->shared ? $self->instance : clone $self->instance;
+            return $self->shared || !is_object($self->instance) ? $self->instance : clone $self->instance;
+        };
+
+        return $self;
+    }
+
+    public static function fromClass(string $class): self
+    {
+        Assert::classExists($class);
+
+        $self = new self($class);
+        $self->factory = function() use ($class) {
+            return new $class();
         };
 
         return $self;
@@ -104,12 +118,6 @@ final class Service
     {
         if ($this->factory !== null) {
             return ($this->factory)();
-        }
-
-        if (class_exists($this->id)) {
-            $class = $this->id;
-
-            return new $class();
         }
 
         throw new ServiceInstanceFailed("Unable to initialize service {$this->id}");

@@ -43,14 +43,11 @@ final class PipesConfigParser implements ConfigParser
 
     private function pipeDefinition(string $key, array $config): Service
     {
-        return Service::fromInstance(
-            $key,
-            new Pipe\CallablePipe(
+        return Service::fromInstance($key, new Pipe\CallablePipe(
                 $this->configureTrigger($config),
                 $this->configureInputTags($config),
                 $config['order'] ?? Pipeline::NORMAL
-            )
-        )
+            ))
             ->withSharing()
             ->withTags(...$this->configurePipelineTags($config));
     }

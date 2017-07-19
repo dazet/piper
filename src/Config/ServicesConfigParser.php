@@ -36,22 +36,22 @@ final class ServicesConfigParser implements ConfigParser
         $services = [];
 
         foreach ($configBlock as $serviceId => $definition) {
-            switch (true) {
-                case ($definition instanceof \Closure):
-                    $services[] = Service::fromFactory($serviceId, $definition);
-                    break;
-
-                case is_string($definition):
-                    $services[] = $this->buildServiceAlias($serviceId, $definition);
-                    break;
-
-                case (is_array($definition)):
-                    $services[] = $this->buildServiceFromClass($serviceId, $definition);
-                    break;
-
-                default:
-                    throw new \RuntimeException("Invalid definition for {$serviceId}");
+            if ($definition instanceof \Closure) {
+                $services[] = Service::fromFactory($serviceId, $definition);
+                continue;
             }
+
+            if (is_string($definition)) {
+                $services[] = $this->buildServiceAlias($serviceId, $definition);
+                continue;
+            }
+
+            if (is_array($definition)) {
+                $services[] = $this->buildServiceFromClass($serviceId, $definition);
+                continue;
+            }
+
+            throw new \RuntimeException("Invalid definition for {$serviceId}");
         }
 
         return new Services(...$services);

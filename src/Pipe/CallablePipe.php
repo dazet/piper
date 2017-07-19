@@ -14,13 +14,13 @@ final class CallablePipe implements Pipe
     private $input;
 
     /** @var int */
-    private $priority;
+    private $order;
 
-    public function __construct(callable $trigger, ObjectTags $input, int $priority = Pipeline::NORMAL)
+    public function __construct(callable $trigger, ObjectTags $input, int $order = Pipeline::NORMAL)
     {
         $this->trigger = $trigger;
         $this->input = $input;
-        $this->priority = $priority;
+        $this->order = $order;
     }
 
     public function trigger(): callable
@@ -35,6 +35,6 @@ final class CallablePipe implements Pipe
 
     public function order(): int
     {
-        return $this->priority;
+        return $this->order;
     }
 }
