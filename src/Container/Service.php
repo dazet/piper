@@ -72,7 +72,7 @@ final class Service
     public function instance()
     {
         if (!$this->shared) {
-            return ($this->factory)();
+            return $this->newInstance();
         }
 
         if ($this->instance === null) {

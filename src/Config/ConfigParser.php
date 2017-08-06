@@ -12,7 +12,7 @@ use Piper\Container\Services;
  *     'parser_key_2' => [...],
  * ]
  *
- * Parser key is used to identify valid parser service.
+ * Parser key is used to identify proper parser service.
  * Parser must parse full configuration block.
  */
 interface ConfigParser

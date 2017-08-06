@@ -2,8 +2,6 @@
 
 namespace Piper\Http\Routing;
 
-use Psr\Http\Message\ServerRequestInterface;
-
 final class Route
 {
     public const ATTRIBUTE = 'route';
@@ -14,17 +12,14 @@ final class Route
     /** @var string */
     private $path;
 
-    /** @var string */
+    /** @var PathPattern */
     private $pattern;
-
-    /** @var string[] */
-    private $patternKeys = [];
 
     public function __construct(string $name, string $path)
     {
         $this->name = $name;
         $this->path = $path;
-        $this->pattern = $this->buildPattern();
+        $this->pattern = new PathPattern($path);
     }
 
     public function name(): string
@@ -37,52 +32,13 @@ final class Route
         return $this->path;
     }
 
-    public function applyTo(ServerRequestInterface $request): ServerRequestInterface
+    public function matchesPath(string $path): bool
     {
-        $uri = $request->getUri();
-        $path = $uri->getPath();
-
-        if (!$this->matchesPath($path)) {
-            return $request;
-        }
-
-        foreach ($this->pathParams($path) as $key => $value) {
-            $request = $request->withAttribute($key, $value);
-        }
-
-        $request = $request->withAttribute(self::ATTRIBUTE, $this);
-
-        return $request;
+        return $this->pattern->matches($path);
     }
 
-    private function buildPattern(): string
+    public function extractParams(string $path): array
     {
-        // quote all by default
-        $pattern = preg_quote($this->path(), '~');
-
-        // replace quoted {paramName} with named sub-pattern
-        $pattern = preg_replace_callback(
-            '~\\{([a-zA-Z]+)\\}~',
-            function(array $m): string {
-                $this->patternKeys[$m[1]] = $m[1];
-
-                return '(?P<' . $m[1] . '>[^/]+)';
-            },
-            $pattern
-        );
-
-        return "~^{$pattern}$~i";
-    }
-
-    private function matchesPath(string $path): bool
-    {
-        return preg_match($this->pattern, $path) === 1;
-    }
-
-    private function pathParams(string $path): array
-    {
-        preg_match($this->pattern, $path, $m);
-
-        return array_intersect_key($m, $this->patternKeys);
+        return $this->pattern->extractParams($path);
     }
 }

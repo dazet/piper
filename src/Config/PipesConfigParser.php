@@ -2,6 +2,7 @@
 
 namespace Piper\Config;
 
+use Piper\Common\Arrays;
 use Piper\Container\Service;
 use Piper\Container\ServiceMethodProxy;
 use Piper\Container\Services;
@@ -32,16 +33,10 @@ final class PipesConfigParser implements ConfigParser
      */
     public function parse(array $configBlock): Services
     {
-        $definitions = [];
-
-        foreach ($configBlock as $key => $config) {
-            $definitions[] = $this->pipeDefinition($key, $config);
-        }
-
-        return new Services(...$definitions);
+        return new Services(...Arrays::mapWithKey([$this, 'pipeDefinition'], $configBlock));
     }
 
-    private function pipeDefinition(string $key, array $config): Service
+    private function pipeDefinition(array $config, string $key): Service
     {
         return Service::fromInstance($key, new Pipe\CallablePipe(
                 $this->configureTrigger($config),

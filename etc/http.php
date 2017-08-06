@@ -24,17 +24,17 @@ return [
         'hello' => ['path' => '/hello', 'pipelines' => ['http']],
     ],
     'pipes' => [
-        [
+        'StartRequestHandler' => [
             'input' => ['class' => Http\StartRequest::class],
             'trigger.service' => [Http\StartRequestHandler::class],
             'pipelines' => ['http'],
         ],
-        [
+        'Router' => [
             'input' => ['class' => ServerRequestInterface::class],
             'trigger.service' => [Http\Routing\Router::class, 'routeRequest'],
             'pipelines' => ['http'],
         ],
-        [
+        'IndexAction' => [
             'input' => [
                 'class' => ServerRequestInterface::class,
                 'attributes' => ['route' => 'index'],
@@ -43,7 +43,7 @@ return [
             'order' => Pipeline::NORMAL,
             'pipelines' => ['http'],
         ],
-        [
+        'HelloAction' => [
             'input' => [
                 'class' => ServerRequestInterface::class,
                 'attributes' => ['route' => 'hello'],

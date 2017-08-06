@@ -2,6 +2,7 @@
 
 namespace Piper\Container;
 
+use Piper\Common\Arrays;
 use Psr\Container\ContainerInterface;
 use Webmozart\Assert\Assert;
 
@@ -22,14 +23,8 @@ class Container implements ContainerInterface
     public function add(Service $service): void
     {
         $this->servicesById[$service->id()] = $service;
-
-        foreach (array_keys($this->servicesByTag) as $tag) {
-            unset($this->servicesByTag[$tag][$service->id()]);
-        }
-
-        foreach ($service->tags() as $tag) {
-            $this->servicesByTag[$tag][] = $service;
-        }
+        $this->removeServiceTags($service);
+        $this->addServiceTags($service);
     }
 
     public function addServices(Services $services): void
@@ -91,5 +86,19 @@ class Container implements ContainerInterface
     private function hasTag($id): bool
     {
         return array_key_exists($id, $this->servicesByTag);
+    }
+
+    private function addServiceTags(Service $service): void
+    {
+        foreach ($service->tags() as $tag) {
+            $this->servicesByTag[$tag][] = $service;
+        }
+    }
+
+    private function removeServiceTags(Service $service): void
+    {
+        foreach ($this->servicesByTag as $tag => $services) {
+            $this->servicesByTag[$tag] = Arrays::excludeKeys($services, $service->id());
+        }
     }
 }

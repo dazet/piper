@@ -23,7 +23,7 @@ final class ConfigLoader
     {
         $services = new Services();
 
-        foreach ($file->block() as $key => $block) {
+        foreach ($file->nextBlock() as $key => $block) {
             $services = $services->join($this->parserFor($key)->parse($block));
         }
 

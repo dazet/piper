@@ -21,7 +21,7 @@ final class ConfigFile
         return new self(file($path));
     }
 
-    public function block(): iterable
+    public function nextBlock(): iterable
     {
         foreach ($this->content as $parser => $config) {
             yield $parser => $config;

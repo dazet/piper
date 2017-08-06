@@ -2,6 +2,7 @@
 
 namespace Piper\Config;
 
+use Piper\Common\Arrays;
 use Piper\Container\Service;
 use Piper\Container\Services;
 use Piper\Http\Routing\Route;
@@ -18,7 +19,7 @@ final class RoutesConfigParser implements ConfigParser
 
     public function parse(array $configBlock): Services
     {
-        return new Services(...array_map([$this, 'parseRoute'], $configBlock, array_keys($configBlock)));
+        return new Services(...Arrays::mapWithKey([$this, 'parseRoute'], $configBlock));
     }
 
     private function parseRoute(array $routeConfig, string $name): Service

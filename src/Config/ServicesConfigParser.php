@@ -2,6 +2,7 @@
 
 namespace Piper\Config;
 
+use Piper\Common\Arrays;
 use Piper\Container\Service;
 use Piper\Container\Services;
 use Psr\Container\ContainerInterface;
@@ -33,28 +34,24 @@ final class ServicesConfigParser implements ConfigParser
      */
     public function parse(array $configBlock): Services
     {
-        $services = [];
+        return new Services(...Arrays::mapWithKey([$this, 'buildService'], $configBlock));
+    }
 
-        foreach ($configBlock as $serviceId => $definition) {
-            if ($definition instanceof \Closure) {
-                $services[] = Service::fromFactory($serviceId, $definition);
-                continue;
-            }
-
-            if (is_string($definition)) {
-                $services[] = $this->buildServiceAlias($serviceId, $definition);
-                continue;
-            }
-
-            if (is_array($definition)) {
-                $services[] = $this->buildServiceFromClass($serviceId, $definition);
-                continue;
-            }
-
-            throw new \RuntimeException("Invalid definition for {$serviceId}");
+    private function buildService($definition, string $serviceId): Service
+    {
+        if ($definition instanceof \Closure) {
+            return Service::fromFactory($serviceId, $definition);
         }
 
-        return new Services(...$services);
+        if (is_string($definition)) {
+            return $this->buildServiceAlias($serviceId, $definition);
+        }
+
+        if (is_array($definition)) {
+            return $this->buildServiceFromClass($serviceId, $definition);
+        }
+
+        throw new \RuntimeException("Invalid definition for {$serviceId}");
     }
 
     private function buildServiceAlias(string $serviceId, string $definition): Service
