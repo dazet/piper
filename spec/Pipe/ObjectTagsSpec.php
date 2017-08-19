@@ -16,7 +16,7 @@ final class ObjectTagsSpec extends ObjectBehavior
 
         $this->beConstructedWith($tag1, $tag2);
 
-        $this->items()->shouldReturn([$tag1, $tag2]);
+        $this->values()->shouldReturn([$tag1, $tag2]);
     }
 
     function it_can_be_equal_than_other_tags()

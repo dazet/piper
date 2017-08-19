@@ -39,7 +39,7 @@ final class ObjectTags
     /**
      * @return ObjectTag[]
      */
-    public function items(): array
+    public function values(): array
     {
         return array_values($this->items);
     }
@@ -51,12 +51,12 @@ final class ObjectTags
 
     public function join(self $other): self
     {
-        return new self(...$this->items(), ...$other->items());
+        return new self(...$this->values(), ...$other->values());
     }
 
     public function withTag(ObjectTag ...$tags): self
     {
-        return new self(...$this->items(), ...$tags);
+        return new self(...$this->values(), ...$tags);
     }
 
     public function isEmpty(): bool

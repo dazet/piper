@@ -120,6 +120,28 @@ final class PipelineSpec extends ObjectBehavior
         $this->pump($a1, $restHandler);
     }
 
+    function it_forks_when_some_pipe_yields_values(Stub\Callback $restHandler)
+    {
+        $a = new Stub\A();
+        $b = new Stub\B();
+        $c = new Stub\C();
+
+        $pipe = new Pipe\CallablePipe(
+            function(Stub\A $a) use ($b, $c): \Generator {
+                yield $b;
+                yield $c;
+            },
+            Pipe\ObjectTags::fromClass(Stub\A::class)
+        );
+
+        $this->constructClassTaggerPipeline($pipe);
+
+        $this->pump($a, $restHandler);
+
+        $restHandler->__invoke($b)->shouldHaveBeenCalledTimes(1);
+        $restHandler->__invoke($c)->shouldHaveBeenCalledTimes(1);
+    }
+
     /**
      * @param Pipe[]|Collaborator[] $pipes
      */
