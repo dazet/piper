@@ -1,9 +1,9 @@
 <?php 
 
-namespace spec\Piper\Pipe\ObjectTagger;
+namespace spec\Piper\Pipeline\ObjectTag;
 
 use PhpSpec\ObjectBehavior;
-use Piper\Pipe\ObjectTags;
+use Piper\Pipeline\ObjectTags;
 use spec\Piper\Stub;
 
 final class InterfacesTaggerSpec extends ObjectBehavior 
@@ -14,7 +14,7 @@ final class InterfacesTaggerSpec extends ObjectBehavior
         $tags = new ObjectTags();
 
         $this->tagsFor($object, $tags)
-            ->shouldBeLike(ObjectTags::fromClasses(Stub\AInterface::class, Stub\XInterface::class));
+            ->shouldBeLike(ObjectTags::forClasses(Stub\AInterface::class, Stub\XInterface::class));
     }
 
     function it_does_nothing_when_class_has_no_interface()
@@ -23,12 +23,5 @@ final class InterfacesTaggerSpec extends ObjectBehavior
         $tags = new ObjectTags();
 
         $this->tagsFor($object, $tags)->shouldReturn($tags);
-    }
-
-    function it_does_nothing_when_input_is_not_object()
-    {
-        $tags = new ObjectTags();
-
-        $this->tagsFor('rubbish', $tags)->shouldReturn($tags);
     }
 }

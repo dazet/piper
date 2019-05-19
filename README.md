@@ -1,78 +1,47 @@
 # Piper
 
-Piper is a idea for an application framework composed from loosely coupled services or functions called here Pipes.
+Piper is the idea for creating application as a sequence of loosely coupled functions called Pipes.
 
-Currently this project is a draft, not yet production ready.
+## Pipe and Pipelines
 
-## Pipe and Pipeline in theory
+Pipe here is a function that takes one object and outputs one object or have no output. 
 
-Pipe is a function that take one input object and returns one output object, optionally output can be null. 
-This limitation makes it possible to connect many Pipes together creating Pipeline.
+Pipeline is constructed from pipes, its flow depends on initial input and how pipes connects to each other.
 
-Pipeline is initialized as collection of pipes and its flow depends on input and how pipes connects to each other.
-Pipeline gets the input, finds matching pipe and passes input through. 
-Than it takes the output and continues the same process until there is no pipe matching last output object.
-This last not processed object can be called pipeline rest or pipeline result. 
-
-Simple pipeline example:
-```
-// Pipeline composed from given pipes:
-p1(A): B (p1 takes A as input and outputs B)
-p2(B): C
-p3(C): D
-p4(X): B
-
-// Pipeline for input A
-A -> p1(A) -> B -> p2(B) -> C -> p3(C) -> D
-
-// Pipeline for input X
-X -> p4(X) -> B -> p2(B) -> C -> p3(C) -> D
-```
-
-`D` is the rest from pipeline and can be optionally passed to rest handler callback.
-
-Pipeline can contain many pipes matching same input, each with defined order.
-Pipes matching same input are called one after another until input is transformed to different type.
-
-The pipeline follows the logic:
-1. Get the pipes that match provided input and put them in order.
-2. Let the input into first pipe and then:
-   * if pipe output is different than input (transforming pipe), start again with output as input,
-   * if pipe output is same type as input (flow pipe), continue with next pipe using output,
-   * if pipe is clogged, continue with next pipe using same input.
+The Pipeline follows the logic:
+1. Find Pipes that match initial input and put them in order.
+2. Call first pipe with current input and get output:
+   * if output is different than input, start again with output as input,
+   * if output is the same type as input (flow pipe), continue with next pipe with output as current input,
+   * if output is null, continue with next pipe using same input.
 3. When there are no pipes matching last output, pass it to provided rest handler.
+
+Pipeline can contain many pipes matching same input, each have defined priority.
+Pipes matching same input are called one after another until input is transformed to different type.
 
 #### Transforming pipe
 
-Kind of pipe that transforms input into object of different type.
+Function that transforms input object into different type. Pipeline is pushed forward.
 
-The most common example is http action which takes request on input and outputs response:
+The most common example is http action which takes request and returns response:
 ```php
-<?php
-
 interface HttpAction
 {
-    public function invoke(ServerRequestInterface $request): ResponseInterface;
+    public function handle(Request $request): Response;
 }
 ```
 
-Transforming pipe is the one that pushes pipeline forward. 
 The simplest pipeline can be composed from pipes where each next pipe input matches previous pipe output.
 
 #### Flow pipe
 
-Kind of pipe where input and output has the same type.
+Function where input and output has the same type. Pipeline continues with replaced input.
 
 For example request attribute converter could look line this:
 ```php
-<?php
-
-use Psr\Http\Message\ServerRequestInterface;
-use Domain\User\UserId;
-
 final class UserIdConverter
 {
-    public function convert(ServerRequestInterface $request): ServerRequestInterface
+    public function convert(Request $request): Response
     {
         $userId = $request->getAttribute('userId', null);
         
@@ -85,9 +54,11 @@ final class UserIdConverter
 }
 ```
 
+It can be used to task like: parameter conversion, data normalizing etc.
+
 #### Clogged pipe
 
-Kind of pipe that does not produce output, probably due certain conditions.
+Function that does not return anything. Pipelne will continue with the same input.
 
 Example:
 ```php
@@ -95,12 +66,12 @@ Example:
 
 final class ActionFilter
 {
-    public function mustBeAuthorized(ServerRequestInterface $request): ?ResponseInterface
+    public function mustBeAuthorized(Request $request): ?Response
     {
         $session = $request->getAttribute('session', Session::anonymous());
         
         if ($session->isAuthorized()) {
-            return new Response('DENIED', 404);
+            return new Response('DENIED', 403);
         }
         
         return null;
@@ -109,25 +80,24 @@ final class ActionFilter
 
 final class AuthorizedAction
 {
-    public function invoke(ServerRequestInterface $request): ResponseInterface
+    public function invoke(Request $request): Response
     {
         return new Response('OK', 200);
     }
 }
 ```
 
-`ActionFilter` must be called before `AuthorizedAction`, so it is defined with earlier order.
+`ActionFilter` must be called before `AuthorizedAction`, so it is defined as a Pipe with earlier order.
 
-Returning null is maybe not the best pattern, perhaps better would be something like `Either<ServerRequestInterface, ResponseInterface>`,
-but unfortunately PHP does not support generics yet.
+Returning null is maybe not the best pattern, perhaps better would be something like `Either<Request, Response>`, but unfortunately PHP does not support generics yet.
 
 ### Object tags
 
-Pipe configuration must contain definition of what kind of object can be handled. 
+Pipe configuration must contain definition of what kind of object it is able to handle. 
 It should be defined precisely to avoid unexpected pipeline behaviour.
 
-Pipe can declare that it accepts only instances of given class or interface, additionally it can require instances with given set of public attributes.
-  
+Pipe can declare that it accepts only instances of given class or interface, additionally it can require instances with given set of attributes.
+
 For example `new ObjectTag(Example::class, ['group' => 'simple'])` defines that pipe accepts only instances of `Example` class that meets the condition `$example->group() === 'simple'`.
 
 Extracting tags from object is done by `ObjectTagger`. 
@@ -144,45 +114,48 @@ Let`s take http request example.
 // Command send to pipeline to initialize process
 class CreateRequest
 {
+    //...
 }
 
-use Psr\Http\Message\ServerRequestInterface;
-
-// Build the request
+// Pipe 1: Build the request
 class RequestFactory
 {
-    public function __invoke(CreateRequest $command): ServerRequestInterface
+    public function __invoke(CreateRequest $command): Request
     {
+        // build Request form command or from globals
         // ...
         return $request;
     }
 }
 
-use Piper\Pipe\CallablePipe;
-use Piper\Pipe\ObjectTags;
-
 // Pipe definition for RequestFactory
-$requestFactory = new CallablePipe(new RequestFactory(), ObjectTags::fromClass(CreateRequest::class));
+$requestFactory = new CallablePipe(
+    new RequestFactory(),                      // Pipe callback
+    ObjectTags::forClass(CreateRequest::class) // Pipe input definition
+);
 
-// Find route matching request uri and append to request
+// Pipe 2: Find route matching request uri and append to request
 class Router
 {
-    public function __invoke(ServerRequestInterface $request): ServerRequestInterface
+    public function __invoke(Request $request): Response
     {
-        // ... find the route ...
+        // find the route and add to request attributes
+        // ...
         return $request->withAttribute('route', $route); 
     }
 }
 
 // Pipe definition for Router, it has order -10 to be called before other pipes
-$router = new CallablePipe(new Router(), ObjectTags::fromClass(ServerRequestInterface::class), -10);
+$router = new CallablePipe(
+    new Router(),
+    ObjectTags::forClass(Request::class),
+    -10 // call it before the others
+);
 
-use Psr\Http\Message\ResponseInterface;
-
-// Some controller actions
+// Pipe 3: Controller action
 class IndexAction
 {
-    public function __invoke(ServerRequestInterface $request): ResponseInterface
+    public function handle(Request $request): Response
     {
         return new Response('This is index'); 
     }
@@ -190,13 +163,14 @@ class IndexAction
 
 // Pipe definition for request routed to index
 $indexAction = new CallablePipe(
-    new IndexAction(), 
-    ObjectTags::fromClass(ServerRequestInterface::class, ['route' => 'index'])
+    new IndexAction(),
+    // accept only request with route `index`
+    ObjectTags::forClass(Request::class, ['route' => 'index'])
 );
 
 class HelloAction
 {
-    public function __invoke(ServerRequestInterface $request): ResponseInterface
+    public function handle(Request $request): Response
     {
         $name = $request->getAttribute('name', 'stranger');
         
@@ -207,13 +181,13 @@ class HelloAction
 // Pipe definition for request routed to hello
 $helloAction = new CallablePipe(
     new HelloAction(), 
-    ObjectTags::fromClass(ServerRequestInterface::class, ['route' => 'hello'])
+    ObjectTags::forClass(Request::class, ['route' => 'hello'])
 );
 
 // Action returning 404 page when route is not found
 class NotFoundAction
 {
-    public function __invoke(ServerRequestInterface $request): ResponseInterface
+    public function handle(Request $request): Response
     {
         return new Response('Page not found', 404); 
     }
@@ -223,7 +197,7 @@ class NotFoundAction
 // it has order 10 to be called only when no other action return response
 $notFoundAction = new CallablePipe(
     new NotFoundAction(), 
-    ObjectTags::fromClass(ServerRequestInterface::class),
+    ObjectTags::forClass(Request::class),
     10
 );
 
@@ -234,29 +208,29 @@ class ResponseEmitted
 
 class ResponseEmitter
 {
-    public function __invoke(ResponseInterface $response): ResponseEmitted
+    public function __invoke(Response $response): ResponseEmitted
     {
-        // ... some dirty work here ...
+        // echo response
+        // ...
         return new ResponseEmitted(); 
     }
 }
 
 // Pipe definition for ResponseEmitter
-$responseEmitter = new CallablePipe(new ResponseEmitter(), ObjectTags::fromClass(ResponseInterface::class));
+$responseEmitter = new CallablePipe(
+    new ResponseEmitter(), 
+    ObjectTags::forClass(Response::class)
+);
 
 // Now let`s create pipeline
-use Piper\Pipe\ObjectTagger\TaggersAggregate;
-use Piper\Pipe\ObjectTagger\ClassTagger;
-use Piper\Pipe\ObjectTagger\InterfacesTagger;
-use Piper\Http\Routing\RoutedRequestTagger;
-
-$objectTagger = new TaggersAggregate(new ClassTagger(), new InterfacesTagger(), new RoutedRequestTagger());
-
-use Piper\Pipeline;
+$objectTagger = TaggersAggregate::default(
+    // cusom tagger that is able to tag routed request 
+    new RoutedRequestTagger() 
+);
 
 $pipeline = new Pipeline(
-    $objectTagger, 
-    $requestFactory, 
+    $objectTagger, // ObjectTagger
+    $requestFactory, // Pipe ...$pipes
     $router, 
     $indexAction, 
     $helloAction, 
@@ -264,7 +238,54 @@ $pipeline = new Pipeline(
     $responseEmitter
 );
 
-// Not pipeline is ready to handle requests
+// run pipelne
 $pipeline->pump(new CreateRequest());
 
 ```
+
+## Creating pipelines with `PipelineBuilder`
+
+`PipelineBuilder` gives simplified way to create pipelines from functions or any type of callables.
+
+#### Pipeline from anonymous functions:
+
+```php
+$pipeline = PipelineBuilder::new()
+    ->pipe(
+        function (A $a): B {
+            return new B();
+        },
+        function (B $b): C {
+            return new C();
+        }
+    )
+    ->build();
+
+// same as:
+$pipeline = PipelineBuilder::new()
+    ->pipe(function (A $a): B {
+        return new B();
+    })
+    ->pipe(function (B $b): C {
+        return new C();
+    })
+    ->build();
+
+$pipeline->pump(new A()); // returns C
+```
+
+#### Pipeline from anonymous functions with custom defined input types:
+
+```php
+$pipeline = $this
+    ->pipeFor(A::class, function ($a): B {
+        return new B();
+    })
+    ->pipeFor(B::class, function ($b): C {
+        return new C();
+    })
+    ->build();
+
+$pipeline->pump(new A()); // returns C
+```
+

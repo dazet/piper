@@ -1,10 +1,14 @@
 <?php
 
-namespace Piper\Pipe;
+namespace Piper\Pipeline;
 
+use JsonSerializable;
+use Piper\Pipeline\Util\ArrayUtil;
 use Webmozart\Assert\Assert;
+use function array_map;
+use function ksort;
 
-final class ObjectTag implements \JsonSerializable
+final class ObjectTag implements JsonSerializable
 {
     /** @var string */
     private $class;
@@ -15,19 +19,14 @@ final class ObjectTag implements \JsonSerializable
     public function __construct(string $class, array $attributes = [])
     {
         Assert::notEmpty($class);
-        Assert::allString($attributes);
-
         $this->class = $class;
-        $this->attributes = $attributes;
+        $this->attributes = array_map('\strval', $attributes);
+        ksort($this->attributes);
     }
 
-    public static function fromJson(string $json): self
+    public static function fromClass(string $class): self
     {
-        $data = json_decode($json, true);
-        Assert::isArray($data);
-        Assert::keyExists($data, 'class');
-
-        return new self($data['class'], $data['attributes'] ?? []);
+        return new self($class);
     }
 
     public function class(): string
@@ -50,6 +49,6 @@ final class ObjectTag implements \JsonSerializable
 
     public function toString(): string
     {
-        return json_encode($this->jsonSerialize());
+        return ArrayUtil::jsonEncode($this->jsonSerialize());
     }
 }

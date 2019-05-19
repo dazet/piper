@@ -2,8 +2,6 @@
 
 namespace Piper\Config;
 
-use Piper\Container\Services;
-
 /**
  * Configuration files has following schema:
  *
@@ -12,12 +10,17 @@ use Piper\Container\Services;
  *     'parser_key_2' => [...],
  * ]
  *
- * Parser key is used to identify proper parser service.
+ * Parser key is used to identify proper parser.
  * Parser must parse full configuration block.
+ *
+ * As a result it returns collection of services/values that can be registered in container.
  */
 interface ConfigParser
 {
     public function key(): string;
 
-    public function parse(array $configBlock): Services;
+    /**
+     * @return mixed
+     */
+    public function parse(ConfigBlock $configBlock);
 }

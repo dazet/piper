@@ -1,6 +1,12 @@
 <?php
 
-namespace Piper\Pipe;
+namespace Piper\Pipeline;
+
+use function array_diff_key;
+use function array_keys;
+use function array_map;
+use function array_values;
+use function count;
 
 final class ObjectTags
 {
@@ -14,10 +20,10 @@ final class ObjectTags
         }
     }
 
-    public static function fromClasses(string ...$classes): self
+    public static function forClasses(string ...$classes): self
     {
         $tags = array_map(
-            function (string $class): ObjectTag {
+            function(string $class): ObjectTag {
                 return new ObjectTag($class);
             },
             $classes
@@ -26,14 +32,16 @@ final class ObjectTags
         return new self(...$tags);
     }
 
-    public static function fromClass(string $class, array $attributes = []): self
+    public static function forClass(string $class, array $attributes = []): self
     {
         return new self(new ObjectTag($class, $attributes));
     }
 
     public static function empty(): self
     {
-        return new self();
+        static $empty;
+
+        return $empty ?? $empty = new self();
     }
 
     /**
@@ -42,6 +50,14 @@ final class ObjectTags
     public function values(): array
     {
         return array_values($this->items);
+    }
+
+    /**
+     * @return string[]
+     */
+    public function valuesToString(): array
+    {
+        return array_keys($this->items);
     }
 
     public function equals(self $other): bool

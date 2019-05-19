@@ -26,9 +26,9 @@ final class ExampleAction
         $routeName = $route instanceof Route ? $route->name() : 'unknown';
 
         $response = new Response();
-        $response->getBody()->write("{$message}<br>Requested path: {$uri->getPath()}, route: {$routeName}");
+        $body = $response->getBody();
+        $body->write("{$message}<br>Requested path: {$uri->getPath()}, route: {$routeName}");
 
         return $response->withStatus(200);
     }
-
 }

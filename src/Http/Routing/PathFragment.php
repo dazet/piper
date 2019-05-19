@@ -2,6 +2,11 @@
 
 namespace Piper\Http\Routing;
 
+use function array_map;
+use function explode;
+use function str_replace;
+use function trim;
+
 final class PathFragment
 {
     /** @var string */

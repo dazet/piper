@@ -2,15 +2,40 @@
 
 namespace Piper\Config;
 
-use Piper\Common\Arrays;
 use Piper\Container\Service;
 use Piper\Container\ServiceMethodProxy;
 use Piper\Container\Services;
-use Piper\Pipe;
-use Piper\Pipeline;
+use Piper\Pipeline\CallablePipe;
+use Piper\Pipeline\ObjectTag;
+use Piper\Pipeline\ObjectTags;
+use Piper\Pipeline\Pipe;
+use Piper\Pipeline\Util\StringUtil;
 use Psr\Container\ContainerInterface;
+use RuntimeException;
 use Webmozart\Assert\Assert;
 
+/**
+ * Pipes definitions configuration block parser.
+ *
+ * It expects following block structure:
+ *
+ * [
+ *     'callable_pipe_id' => [
+ *         'input' => ['class' => 'Some\Class', attributes => ['key' => 'value']]
+ *         'trigger.callable' => function ($input) { return $output; },
+ *         'pipeline' => ['pipeline_tag']
+ *     ],
+ *     'service_pipe_id' => [
+ *         'input' => ['class' => 'Other\Class']
+ *         'trigger.service' => ['service_id', 'serviceMethod'],
+ *         'pipeline' => ['pipeline_tag']
+ *     ],
+ * ]
+ *
+ * As a result all pipes will be registered in container as service under given pipe id.
+ *
+ * Additionally given pipe services can be tagged with `pipeline:pipeline_tag`.
+ */
 final class PipesConfigParser implements ConfigParser
 {
     public const KEY = 'pipes';
@@ -28,23 +53,31 @@ final class PipesConfigParser implements ConfigParser
         return self::KEY;
     }
 
-    /**
-     * @param array[] $configBlock
-     */
-    public function parse(array $configBlock): Services
+    public function parse(ConfigBlock $configBlock): Services
     {
-        return new Services(...Arrays::mapWithKey([$this, 'pipeDefinition'], $configBlock));
+        $pipes = [];
+
+        foreach ($configBlock->content() as $pipeId => $pipeConfig) {
+            $pipes[] = $this->pipeDefinition($pipeConfig, $pipeId);
+        }
+
+        return new Services(...$pipes);
     }
 
-    private function pipeDefinition(array $config, string $key): Service
+    private function pipeDefinition(array $pipeConfig, string $pipeId): Service
     {
-        return Service::fromInstance($key, new Pipe\CallablePipe(
-                $this->configureTrigger($config),
-                $this->configureInputTags($config),
-                $config['order'] ?? Pipeline::NORMAL
-            ))
+        return Service::fromInstance($pipeId, $this->buildPipe($pipeConfig))
             ->withSharing()
-            ->withTags(...$this->configurePipelineTags($config));
+            ->withTags(...$this->configurePipelineTags($pipeConfig));
+    }
+
+    private function buildPipe(array $pipeConfig): CallablePipe
+    {
+        return new CallablePipe(
+            $this->configureTrigger($pipeConfig),
+            $this->configureInputTags($pipeConfig),
+            $pipeConfig['order'] ?? Pipe::NORMAL
+        );
     }
 
     private function configureTrigger(array $config): callable
@@ -60,23 +93,23 @@ final class PipesConfigParser implements ConfigParser
 
             Assert::keyExists($def, 0);
 
-            $class = $def[0];
+            $serviceId = $def[0];
             $method = $def[1] ?? null;
 
-            return new ServiceMethodProxy($this->container, $class, $method);
+            return new ServiceMethodProxy($this->container, $serviceId, $method);
         }
 
-        throw new \RuntimeException('Invalid pipe config: ' . var_export($config, true));
+        throw new RuntimeException('Invalid pipe config: ' . var_export($config, true));
     }
 
-    private function configureInputTags(array $config): Pipe\ObjectTags
+    private function configureInputTags(array $config): ObjectTags
     {
         Assert::keyExists($config, 'input');
         Assert::keyExists($config['input'], 'class');
 
-        $tag = new Pipe\ObjectTag($config['input']['class'], $config['input']['attributes'] ?? []);
+        $tag = new ObjectTag($config['input']['class'], $config['input']['attributes'] ?? []);
 
-        return new Pipe\ObjectTags($tag);
+        return new ObjectTags($tag);
     }
 
     private function configurePipelineTags(array $config): array
@@ -87,11 +120,6 @@ final class PipesConfigParser implements ConfigParser
 
         Assert::allStringNotEmpty($config['pipelines']);
 
-        return array_map(
-            function(string $pipeline): string {
-                return "pipeline:{$pipeline}";
-            },
-            $config['pipelines']
-        );
+        return StringUtil::prependAll('pipeline:', ...$config['pipelines']);
     }
 }

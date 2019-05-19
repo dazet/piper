@@ -1,14 +1,11 @@
 <?php
 
-namespace Piper\Pipe;
-
-use Piper\Pipe;
-use Piper\Pipeline;
+namespace Piper\Pipeline;
 
 final class CallablePipe implements Pipe
 {
     /** @var callable */
-    private $trigger;
+    private $callback;
 
     /** @var ObjectTags */
     private $input;
@@ -16,16 +13,16 @@ final class CallablePipe implements Pipe
     /** @var int */
     private $order;
 
-    public function __construct(callable $trigger, ObjectTags $input, int $order = Pipeline::NORMAL)
+    public function __construct(callable $callback, ObjectTags $input, int $order = Pipe::NORMAL)
     {
-        $this->trigger = $trigger;
+        $this->callback = $callback;
         $this->input = $input;
         $this->order = $order;
     }
 
-    public function trigger(): callable
+    public function __invoke(object $object): ?object
     {
-        return $this->trigger;
+        return ($this->callback)($object);
     }
 
     public function input(): ObjectTags

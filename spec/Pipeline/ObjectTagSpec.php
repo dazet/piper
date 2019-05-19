@@ -1,10 +1,11 @@
 <?php 
 
-namespace spec\Piper\Pipe;
+namespace spec\Piper\Pipeline;
 
 use PhpSpec\ObjectBehavior;
-use Piper\Pipe\ObjectTag;
+use Piper\Pipeline\ObjectTag;
 use spec\Piper\Stub;
+use function json_encode;
 
 final class ObjectTagSpec extends ObjectBehavior 
 {
@@ -39,15 +40,5 @@ final class ObjectTagSpec extends ObjectBehavior
         $json = json_encode(['class' => Stub\A::class, 'attributes' => ['value' => 'AAA']]);
 
         $this->toString()->shouldReturn($json);
-    }
-
-    function it_can_be_created_from_json()
-    {
-        $tag = new ObjectTag(Stub\A::class, ['value' => 'ABC']);
-
-        $this->beConstructedThrough('fromJson', [$tag->toString()]);
-
-        $this->class()->shouldBe(Stub\A::class);
-        $this->attributes()->shouldBe(['value' => 'ABC']);
     }
 }

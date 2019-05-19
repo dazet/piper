@@ -2,9 +2,10 @@
 
 namespace Piper\Container;
 
-use Piper\Common\Arrays;
+use Piper\Pipeline\Util\ArrayUtil;
 use Psr\Container\ContainerInterface;
 use Webmozart\Assert\Assert;
+use function is_string;
 
 class Container implements ContainerInterface
 {
@@ -98,7 +99,7 @@ class Container implements ContainerInterface
     private function removeServiceTags(Service $service): void
     {
         foreach ($this->servicesByTag as $tag => $services) {
-            $this->servicesByTag[$tag] = Arrays::excludeKeys($services, $service->id());
+            $this->servicesByTag[$tag] = ArrayUtil::except($services, $service->id());
         }
     }
 }

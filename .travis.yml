@@ -1,0 +1,12 @@
+language: php
+
+php:
+    - "7.2"
+    - "7.3"
+
+install:
+    - composer install --dev
+
+script:
+    - ./vendor/bin/phpspec run
+    - ./vendor/bin/phpstan analyze -l 7 src

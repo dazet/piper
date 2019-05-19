@@ -2,6 +2,8 @@
 
 namespace Piper\Http;
 
+use function microtime;
+
 final class StartRequest
 {
     /** @var float */

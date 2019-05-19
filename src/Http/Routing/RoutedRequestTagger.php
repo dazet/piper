@@ -2,30 +2,31 @@
 
 namespace Piper\Http\Routing;
 
-use Piper\Pipe\ObjectTag;
-use Piper\Pipe\ObjectTagger;
-use Piper\Pipe\ObjectTags;
+use Piper\Pipeline\ObjectTag;
+use Piper\Pipeline\ObjectTagger;
+use Piper\Pipeline\ObjectTags;
 use Psr\Http\Message\ServerRequestInterface;
 
 final class RoutedRequestTagger implements ObjectTagger
 {
-    public function tagsFor($object, ObjectTags $default): ObjectTags
+    public function tagsFor(object $object, ObjectTags $default): ObjectTags
     {
         if (!$object instanceof ServerRequestInterface) {
             return $default;
         }
 
+        $routeName = null;
         $route = $object->getAttribute(Route::ATTRIBUTE, null);
 
         if ($route instanceof Route) {
-            return $default->withTag($this->routedRequestTag($route));
+            $routeName = $route->name();
         }
 
-        return $default;
+        return $default->withTag($this->routedRequestTag($routeName));
     }
 
-    private function routedRequestTag(Route $route): ObjectTag
+    private function routedRequestTag(?string $route): ObjectTag
     {
-        return new ObjectTag(ServerRequestInterface::class, [Route::ATTRIBUTE => $route->name()]);
+        return new ObjectTag(ServerRequestInterface::class, [Route::ATTRIBUTE => $route]);
     }
 }

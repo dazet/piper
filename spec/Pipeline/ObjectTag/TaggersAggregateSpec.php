@@ -1,10 +1,10 @@
 <?php 
 
-namespace spec\Piper\Pipe\ObjectTagger;
+namespace spec\Piper\Pipeline\ObjectTag;
 
 use PhpSpec\ObjectBehavior;
-use Piper\Pipe\ObjectTagger;
-use Piper\Pipe\ObjectTags;
+use Piper\Pipeline\ObjectTagger;
+use Piper\Pipeline\ObjectTags;
 use spec\Piper\Stub;
 
 final class TaggersAggregateSpec extends ObjectBehavior 
@@ -15,8 +15,8 @@ final class TaggersAggregateSpec extends ObjectBehavior
 
         $object = new Stub\A();
         $tags0 = new ObjectTags();
-        $tags1 = ObjectTags::fromClasses(Stub\A::class);
-        $tags2 = ObjectTags::fromClasses(Stub\A::class, Stub\B::class);
+        $tags1 = ObjectTags::forClasses(Stub\A::class);
+        $tags2 = ObjectTags::forClasses(Stub\A::class, Stub\B::class);
 
         $tagger1->tagsFor($object, $tags0)->shouldBeCalledTimes(1)->willReturn($tags1);
         $tagger2->tagsFor($object, $tags1)->shouldBeCalledTimes(1)->willReturn($tags2);

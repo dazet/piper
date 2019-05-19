@@ -2,11 +2,12 @@
 
 namespace Piper\Container;
 
+use Closure;
 use Psr\Container\ContainerInterface;
 
 final class ServiceMethodProxy
 {
-    /** @var \Closure */
+    /** @var Closure */
     private $callback;
 
     public function __construct(ContainerInterface $container, string $serviceId, string $method = null)
@@ -15,7 +16,7 @@ final class ServiceMethodProxy
         $this->callback = function(...$args) use ($container, $serviceId, $method) {
             $service = $container->get($serviceId);
             $callable = $method === null ? $service : [$service, $method];
-            $this->callback = \Closure::fromCallable($callable);
+            $this->callback = Closure::fromCallable($callable);
 
             return ($this->callback)(...$args);
         };

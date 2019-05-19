@@ -2,6 +2,12 @@
 
 namespace Piper\Http\Routing;
 
+use LogicException;
+use function is_string;
+use function preg_match;
+use function preg_quote;
+use function preg_replace_callback;
+
 final class PathPattern
 {
     /** @var string */
@@ -46,7 +52,8 @@ final class PathPattern
         return array_map(
             function(string $value): ?string {
                 return $value !== '' ? $value : null;
-            }, $params
+            },
+            $params
         );
     }
 
@@ -72,6 +79,10 @@ final class PathPattern
             },
             $pathPattern
         );
+
+        if (!is_string($pathPattern)) {
+            throw new LogicException('Broken pathPattern');
+        }
 
         // replace optional {paramName?} or {/paramName?} with named sub-pattern
         $pathPattern = preg_replace_callback(

@@ -1,10 +1,10 @@
 <?php 
 
-namespace spec\Piper\Pipe;
+namespace spec\Piper\Pipeline;
 
 use PhpSpec\ObjectBehavior;
-use Piper\Pipe\ObjectTag;
-use Piper\Pipe\ObjectTags;
+use Piper\Pipeline\ObjectTag;
+use Piper\Pipeline\ObjectTags;
 use spec\Piper\Stub;
 
 final class ObjectTagsSpec extends ObjectBehavior 

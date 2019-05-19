@@ -3,6 +3,9 @@
 namespace Piper\Container;
 
 use Webmozart\Assert\Assert;
+use function array_merge;
+use function array_unique;
+use function is_object;
 
 final class Service
 {
@@ -105,7 +108,7 @@ final class Service
     public function withTags(string ...$tags): self
     {
         $copy = clone $this;
-        $copy->tags = array_keys(array_count_values(array_merge($this->tags, $tags)));
+        $copy->tags = array_unique(array_merge($this->tags, $tags));
 
         return $copy;
     }

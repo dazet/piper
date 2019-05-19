@@ -2,25 +2,22 @@
     "name": "dazet/piper",
     "type": "project",
     "autoload": {
-        "psr-0": {
-            "": "src/"
-        },
         "psr-4": {
             "Piper\\": "src/",
             "spec\\Piper\\": "spec/"
         }
     },
     "require": {
+        "php": "^7.3",
+        "ext-json": "*",
         "psr/http-message": "^1.0",
         "psr/container": "^1.0@dev",
-        "webmozart/assert": "^1.2",
+        "webmozart/assert": "^1.4",
         "zendframework/zend-diactoros": "^1.4"
     },
     "require-dev": {
-        "phpspec/phpspec": "^3.2"
-    },
-    "config": {
-        "bin-dir": "bin"
+        "phpspec/phpspec": "^5.0",
+        "phpstan/phpstan": "^0.11.0@dev"
     },
     "license": "MIT",
     "minimum-stability": "dev"

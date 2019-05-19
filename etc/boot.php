@@ -1,17 +1,14 @@
 <?php
 
-use Piper\Http\Routing\RoutedRequestTagger;
-use Piper\Pipe\ObjectTagger;
-use Piper\Pipe\ObjectTagger\ClassTagger;
-use Piper\Pipe\ObjectTagger\InterfacesTagger;
-use Piper\Pipe\ObjectTagger\TaggersAggregate;
+use Piper\Pipeline\ObjectTag\ClassTagger;
+use Piper\Pipeline\ObjectTag\InterfacesTagger;
+use Piper\Pipeline\ObjectTag\TaggersAggregate;
+use Piper\Pipeline\ObjectTagger;
 
 return [
     'services' => [
         ObjectTagger::class => function() {
-            return new TaggersAggregate(
-                new ClassTagger(), new InterfacesTagger(), new RoutedRequestTagger()
-            );
+            return new TaggersAggregate(new ClassTagger(), new InterfacesTagger());
         }
     ],
 ];

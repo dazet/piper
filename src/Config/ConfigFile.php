@@ -3,28 +3,41 @@
 namespace Piper\Config;
 
 use Webmozart\Assert\Assert;
+use function array_keys;
+use function array_map;
 
+/**
+ * Configuration file structure containing one or many configuration blocks:
+ *
+ * $blocks = [
+ *     'block_key' => [ ... block config ... ]
+ * ];
+ */
 final class ConfigFile
 {
-    /** @var array */
-    private $content;
+    /** @var ConfigBlock[] */
+    private $blocks;
 
     public function __construct(array $content)
     {
-        $this->content = $content;
+        $keys = array_keys($content);
+        Assert::allString($keys);
+        Assert::allNotEmpty($keys);
+
+        $this->blocks = array_map(
+            function(string $key, array $config): ConfigBlock {
+                return new ConfigBlock($key, $config);
+            },
+            $keys,
+            $content
+        );
     }
 
-    public static function fromPath(string $path): self
+    /**
+     * @return ConfigBlock[]
+     */
+    public function blocks(): array
     {
-        Assert::fileExists($path);
-
-        return new self(file($path));
-    }
-
-    public function nextBlock(): iterable
-    {
-        foreach ($this->content as $parser => $config) {
-            yield $parser => $config;
-        }
+        return $this->blocks;
     }
 }

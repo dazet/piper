@@ -2,6 +2,9 @@
 
 namespace Piper\Http\Routing;
 
+use Generator;
+use function array_shift;
+
 final class RouteBranch
 {
     /** @var PathFragment */
@@ -78,9 +81,9 @@ final class RouteBranch
     }
 
     /**
-     * @return \Generator|RouteBranch[]
+     * @return Generator|RouteBranch[]
      */
-    private function nextBranchForFragment(PathFragment $fragment): \Generator
+    private function nextBranchForFragment(PathFragment $fragment): Generator
     {
         $key = $fragment->toString();
         $staticBranch = $this->branches[$key] ?? null;
@@ -102,7 +105,7 @@ final class RouteBranch
         return PathFragment::empty();
     }
 
-    private function branchesThatMatchesFragment(PathFragment $fragment): \Generator
+    private function branchesThatMatchesFragment(PathFragment $fragment): Generator
     {
         foreach ($this->variableBranches as $variableBranch) {
             if ($variableBranch->fragment->matches($fragment)) {
