@@ -4,7 +4,7 @@ namespace spec\Piper\Pipeline\ObjectTag;
 
 use PhpSpec\ObjectBehavior;
 use Piper\Pipeline\ObjectTags;
-use spec\Piper\Stub;
+use spec\Piper\Pipeline\Stub;
 
 final class InterfacesTaggerSpec extends ObjectBehavior 
 {

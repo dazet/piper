@@ -20,6 +20,11 @@ final class CallablePipe implements Pipe
         $this->order = $order;
     }
 
+    public static function forClass(string $class, callable $callback): self
+    {
+        return new self($callback, ObjectTags::forClass($class));
+    }
+
     public function __invoke(object $object): ?object
     {
         return ($this->callback)($object);

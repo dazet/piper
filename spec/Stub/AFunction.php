@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace spec\Piper\Stub;
+namespace spec\Piper\Pipeline\Stub;
 
 final class AFunction
 {

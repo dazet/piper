@@ -1,6 +1,6 @@
 suites:
     piper:
-         namespace: Piper
-         psr4_prefix: Piper
+         namespace: Piper\Pipeline
+         psr4_prefix: Piper\Pipeline
          spec_path: .
          src_path: src

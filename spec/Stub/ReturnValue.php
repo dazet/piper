@@ -1,15 +1,15 @@
 <?php declare(strict_types=1);
 
-namespace spec\Piper\Stub;
+namespace spec\Piper\Pipeline\Stub;
 
-final class PassNext
+final class ReturnValue
 {
     /** @var mixed */
-    private $next;
+    private $value;
 
-    public function __construct($next)
+    public function __construct($value)
     {
-        $this->next = $next;
+        $this->value = $value;
     }
 
     /**
@@ -18,6 +18,6 @@ final class PassNext
      */
     public function __invoke($arg)
     {
-        return $this->next;
+        return $this->value;
     }
 }

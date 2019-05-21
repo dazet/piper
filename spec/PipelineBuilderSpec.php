@@ -5,14 +5,14 @@ namespace spec\Piper\Pipeline;
 use Generator;
 use InvalidArgumentException;
 use PhpSpec\ObjectBehavior;
-use spec\Piper\Stub\A;
-use spec\Piper\Stub\AFunction;
-use spec\Piper\Stub\AInterface;
-use spec\Piper\Stub\B;
-use spec\Piper\Stub\BFunction;
-use spec\Piper\Stub\C;
-use spec\Piper\Stub\Callback;
-use spec\Piper\Stub\PassNext;
+use spec\Piper\Pipeline\Stub\A;
+use spec\Piper\Pipeline\Stub\AFunction;
+use spec\Piper\Pipeline\Stub\AInterface;
+use spec\Piper\Pipeline\Stub\B;
+use spec\Piper\Pipeline\Stub\BFunction;
+use spec\Piper\Pipeline\Stub\C;
+use spec\Piper\Pipeline\Stub\Callback;
+use spec\Piper\Pipeline\Stub\ReturnValue;
 
 final class PipelineBuilderSpec extends ObjectBehavior
 {
@@ -103,8 +103,8 @@ final class PipelineBuilderSpec extends ObjectBehavior
         $c = new C();
 
         $pipeline = $this
-            ->pipeFor(A::class, new PassNext(new B()))
-            ->pipeFor(B::class, new PassNext($c))
+            ->pipeFor(A::class, new ReturnValue(new B()))
+            ->pipeFor(B::class, new ReturnValue($c))
             ->build();
 
         $pipeline->pump(new A())->shouldReturn($c);

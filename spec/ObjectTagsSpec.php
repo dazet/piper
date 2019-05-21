@@ -5,7 +5,7 @@ namespace spec\Piper\Pipeline;
 use PhpSpec\ObjectBehavior;
 use Piper\Pipeline\ObjectTag;
 use Piper\Pipeline\ObjectTags;
-use spec\Piper\Stub;
+use spec\Piper\Pipeline\Stub;
 
 final class ObjectTagsSpec extends ObjectBehavior 
 {

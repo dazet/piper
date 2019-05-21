@@ -1,19 +1,16 @@
 {
     "name": "dazet/piper",
-    "type": "project",
+    "type": "library",
+    "description": "Piper is the idea for creating application as a sequence of loosely coupled functions called Pipes.",
     "autoload": {
         "psr-4": {
-            "Piper\\": "src/",
-            "spec\\Piper\\": "spec/"
+            "Piper\\Pipeline\\": "src/",
+            "spec\\Piper\\Pipeline\\": "spec/"
         }
     },
     "require": {
-        "php": "^7.3",
-        "ext-json": "*",
-        "psr/http-message": "^1.0",
-        "psr/container": "^1.0@dev",
-        "webmozart/assert": "^1.4",
-        "zendframework/zend-diactoros": "^1.4"
+        "php": "^7.2",
+        "ext-json": "*"
     },
     "require-dev": {
         "phpspec/phpspec": "^5.0",

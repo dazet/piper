@@ -4,7 +4,7 @@ namespace spec\Piper\Pipeline;
 
 use PhpSpec\ObjectBehavior;
 use Piper\Pipeline\ObjectTag;
-use spec\Piper\Stub;
+use spec\Piper\Pipeline\Stub;
 use function json_encode;
 
 final class ObjectTagSpec extends ObjectBehavior 

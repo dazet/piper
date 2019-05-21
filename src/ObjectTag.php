@@ -2,11 +2,12 @@
 
 namespace Piper\Pipeline;
 
+use InvalidArgumentException;
 use JsonSerializable;
 use Piper\Pipeline\Util\ArrayUtil;
-use Webmozart\Assert\Assert;
 use function array_map;
 use function ksort;
+use function trim;
 
 final class ObjectTag implements JsonSerializable
 {
@@ -18,7 +19,11 @@ final class ObjectTag implements JsonSerializable
 
     public function __construct(string $class, array $attributes = [])
     {
-        Assert::notEmpty($class);
+        $class = trim($class);
+        if ($class === '') {
+            throw new InvalidArgumentException('Empty class identifier');
+        }
+
         $this->class = $class;
         $this->attributes = array_map('\strval', $attributes);
         ksort($this->attributes);
